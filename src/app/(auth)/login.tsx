@@ -1,131 +1,152 @@
-import "../../../global.css";
-import { router, type Href } from "expo-router";
+/// <reference types="nativewind/types" />
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useAuthStore } from "../../stores/authStore";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, isLoading } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Perhatian", "Email dan kata sandi wajib diisi.");
-      return;
-    }
-    try {
-      await login(email, password);
-      router.replace("/(tabs)/index" as Href);
-    } catch (error: any) {
-      const msg =
-        error?.response?.data?.message || "Login gagal. Periksa kembali email dan kata sandi.";
-      Alert.alert("Login Gagal", msg);
-    }
+  const handleLogin = () => {
+    router.replace("/(tabs)");
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-slate-900"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="flex-1 justify-center px-6 py-12">
+    <View className="flex-1 bg-[#F1F5F9]">
+      {/* LATAR BIRU: Menggunakan tinggi tetap (h-[320px]) agar tidak ikut menyusut/naik saat keyboard muncul */}
+      <View className="absolute top-0 left-0 right-0 h-[320px] bg-[#0D3B66] rounded-b-[40px]" />
 
-          {/* Logo & Brand */}
-          <View className="items-center mb-10">
-            <View className="w-20 h-20 rounded-3xl bg-emerald-500 items-center justify-center mb-4 shadow-lg">
-              <Text className="text-white text-3xl font-bold">S</Text>
-            </View>
-            <Text className="text-white text-2xl font-bold tracking-tight">
-              SI-TRAVEL
-            </Text>
-            <Text className="text-slate-400 text-sm mt-1">
-              Reservasi Tiket Travel Online
-            </Text>
-          </View>
+      <StatusBar barStyle="light-content" />
 
-          {/* Card Form */}
-          <View className="bg-white rounded-3xl p-6 shadow-xl">
-            <Text className="text-slate-800 text-xl font-bold mb-1">
-              Masuk ke Akun
-            </Text>
-            <Text className="text-slate-400 text-sm mb-6">
-              Masukkan email dan kata sandi Anda
-            </Text>
-
-            {/* Email */}
-            <View className="mb-4">
-              <Text className="text-slate-700 text-sm font-semibold mb-1.5">
-                Alamat Email
-              </Text>
-              <TextInput
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 bg-slate-50"
-                placeholder="nama@email.com"
-                placeholderTextColor="#94a3b8"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
-            </View>
-
-            {/* Password */}
-            <View className="mb-6">
-              <Text className="text-slate-700 text-sm font-semibold mb-1.5">
-                Kata Sandi
-              </Text>
-              <TextInput
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 bg-slate-50"
-                placeholder="••••••••"
-                placeholderTextColor="#94a3b8"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-
-            {/* Tombol Login */}
-            <TouchableOpacity
-              onPress={handleLogin}
-              disabled={isLoading}
-              className={`w-full py-3.5 rounded-xl items-center ${
-                isLoading ? "bg-emerald-400" : "bg-emerald-600"
-              }`}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white font-bold text-sm">
-                  Masuk Sekarang
-                </Text>
-              )}
-            </TouchableOpacity>
-            
-            {/* Link ke Registrasi */}
-            <View className="flex-row justify-center mt-4">
-              <Text className="text-slate-500 text-sm">Belum punya akun? </Text>
-              <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-                <Text className="text-emerald-600 text-sm font-semibold">Daftar Sekarang</Text>
+      <SafeAreaView className="flex-1">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+        >
+          {/* Tambahan keyboardShouldPersistTaps agar tombol bisa langsung diklik meski keyboard sedang terbuka */}
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* HEADER: Tombol Kembali & Logo */}
+            <View className="flex-row items-center justify-between px-6 mt-4 mb-8">
+              <TouchableOpacity
+                onPress={() => router.back()}
+                className="w-10 h-10 bg-white/20 rounded-full items-center justify-center backdrop-blur-md"
+              >
+                <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
               </TouchableOpacity>
-            </View>
-          </View>
 
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+              {/* Teks Logo Diperbesar (text-4xl) */}
+              <Text className="text-4xl font-extrabold text-white tracking-tighter">
+                jalan<Text className="text-[#00B4D8]">ku.</Text>
+              </Text>
+
+              <View className="w-10 h-10" />
+            </View>
+
+            {/* TEKS JUDUL */}
+            <View className="px-6 mb-6">
+              <Text className="text-white/80 text-xs font-bold uppercase tracking-widest mb-2">
+                Selamat Datang Kembali
+              </Text>
+              {/* Judul Halaman Diperbesar (text-4xl) */}
+              <Text className="text-4xl font-extrabold text-white mb-2 tracking-tight">
+                Masuk ke akunmu
+              </Text>
+              <Text className="text-white/70 text-sm leading-relaxed">
+                Lanjutkan rencana perjalananmu yang sempat tertunda.
+              </Text>
+            </View>
+
+            {/* KARTU FORM LOGIN */}
+            <View className="bg-white rounded-[32px] mx-5 p-6 shadow-xl shadow-black/10">
+              <View className="mb-5">
+                <Text className="text-gray-500 font-bold text-xs mb-2 ml-1 uppercase tracking-wider">
+                  Email / Nomor HP
+                </Text>
+                <View className="flex-row items-center bg-[#F8FAFC] border border-gray-100 rounded-2xl px-4 py-4">
+                  <Ionicons name="mail" size={20} color="#9CA3AF" />
+                  <TextInput
+                    className="flex-1 text-base text-[#0D3B66] ml-3 font-medium"
+                    placeholder="penumpang@email.com"
+                    placeholderTextColor="#CBD5E1"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+              </View>
+
+              <View className="mb-2">
+                <Text className="text-gray-500 font-bold text-xs mb-2 ml-1 uppercase tracking-wider">
+                  Kata Sandi
+                </Text>
+                <View className="flex-row items-center bg-[#F8FAFC] border border-gray-100 rounded-2xl px-4 py-4">
+                  <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
+                  <TextInput
+                    className="flex-1 text-base text-[#0D3B66] ml-3 font-medium"
+                    placeholder="••••••••"
+                    placeholderTextColor="#CBD5E1"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    className="p-1"
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye" : "eye-off"}
+                      size={20}
+                      color="#9CA3AF"
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <TouchableOpacity className="items-end mb-8 mt-2">
+                <Text className="text-[#00B4D8] font-bold text-sm">
+                  Lupa kata sandi?
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleLogin}
+                className="bg-[#0D3B66] rounded-2xl py-4 items-center shadow-lg shadow-blue-900/30 mb-6"
+              >
+                <Text className="text-white font-bold text-lg">Masuk</Text>
+              </TouchableOpacity>
+
+              <View className="flex-row justify-center mb-2">
+                <Text className="text-gray-500 text-sm">
+                  Belum punya akun?{" "}
+                </Text>
+                <Link href="/(auth)/register" asChild>
+                  <TouchableOpacity>
+                    <Text className="text-[#00B4D8] font-bold text-sm">
+                      Daftar sekarang
+                    </Text>
+                  </TouchableOpacity>
+                </Link>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }

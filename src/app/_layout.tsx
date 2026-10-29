@@ -1,21 +1,23 @@
+import { Stack } from "expo-router";
 import { useEffect } from "react";
-import { Stack, router } from "expo-router";
-import { useAuthStore } from "../stores/authStore";
 import "../../global.css";
+import { useAuthStore } from "../stores/authStore";
 
 export default function RootLayout() {
   const { token, loadToken } = useAuthStore();
 
   useEffect(() => {
     loadToken().then(() => {
-      if (!token) {
-        router.replace("/(auth)/login");
-      }
+      // SEMENTARA DIMATIKAN AGAR TIDAK PINDAH OTOMATIS
+      // if (!token) {
+      //   router.replace("/(auth)/login");
+      // }
     });
-  }, []);
+  }, []); // Hapus 'token' dari array jika sebelumnya ada
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
     </Stack>
