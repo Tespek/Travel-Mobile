@@ -1,9 +1,12 @@
 /// <reference types="nativewind/types" />
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router"; // 1. Tambahkan import alat navigasi
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const router = useRouter(); // 2. Aktifkan alat navigasinya di sini
+
   return (
     <SafeAreaView className="flex-1 bg-[#F8FAFC]">
       <ScrollView
@@ -89,7 +92,10 @@ export default function HomeScreen() {
             </View>
 
             {/* Tombol Cari */}
-            <TouchableOpacity className="bg-[#1e5b96] py-4 rounded-xl items-center flex-row justify-center">
+            <TouchableOpacity
+              onPress={() => router.push("/search")} // 3. Tambahkan eksekusi pindah ke halaman /search
+              className="bg-[#1e5b96] py-4 rounded-xl items-center flex-row justify-center"
+            >
               <Text className="text-white font-bold mr-2 text-base">
                 Cari perjalanan
               </Text>
@@ -101,13 +107,14 @@ export default function HomeScreen() {
         {/* MENU CEPAT (Quick Menus) */}
         <View className="flex-row justify-between px-6 mt-8">
           {[
-            { icon: "search-outline", label: "Cari bus" },
-            { icon: "ticket-outline", label: "Tiket saya" },
-            { icon: "heart-outline", label: "Favorit" },
-            { icon: "person-outline", label: "Akun" },
+            { icon: "search-outline", label: "Cari bus", route: "/search" },
+            { icon: "ticket-outline", label: "Tiket saya", route: "/ticket" },
+            { icon: "heart-outline", label: "Favorit", route: "/favorites" },
+            { icon: "person-outline", label: "Akun", route: "/profile" },
           ].map((item, idx) => (
             <TouchableOpacity
               key={idx}
+              onPress={() => (item.route ? router.push(item.route) : null)} // Tambahan: Menu cepat juga saya aktifkan navigasinya (opsional)
               className="bg-white w-[75px] h-[75px] rounded-2xl items-center justify-center shadow-sm border border-gray-50"
             >
               <Ionicons
