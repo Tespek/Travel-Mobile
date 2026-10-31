@@ -58,11 +58,9 @@ const TICKET_DATA = [
 export default function SearchScreen() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("Direkomendasikan");
-
-  // State untuk mengontrol buka/tutup modal filter
   const [isFilterVisible, setFilterVisible] = useState(false);
 
-  const FilterChip = ({ label }) => (
+  const FilterChip = ({ label }: { label: string }) => (
     <TouchableOpacity
       onPress={() => setActiveFilter(label)}
       className={`px-4 py-2 rounded-full border mr-2 ${
@@ -81,7 +79,7 @@ export default function SearchScreen() {
     </TouchableOpacity>
   );
 
-  const renderTicketCard = ({ item }) => (
+  const renderTicketCard = ({ item }: { item: any }) => (
     <View className="bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
       <View className="flex-row justify-between items-start mb-4">
         <View className="flex-row items-center flex-1">
@@ -134,7 +132,15 @@ export default function SearchScreen() {
           </Text>
           <Text className="text-xs text-gray-400">/ penumpang</Text>
         </View>
-        <TouchableOpacity className="bg-[#0D3B66] px-6 py-2 rounded-lg">
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: "/pilih-kursi",
+              params: { operator: item.operator, vehicle: item.vehicle },
+            })
+          }
+          className="bg-[#0D3B66] px-6 py-2 rounded-lg"
+        >
           <Text className="text-white font-bold text-sm">Pilih</Text>
         </TouchableOpacity>
       </View>
@@ -187,8 +193,6 @@ export default function SearchScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Tombol Filter yang memicu Modal Terbuka */}
           <TouchableOpacity
             onPress={() => setFilterVisible(true)}
             className="flex-row items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-200"
@@ -221,9 +225,7 @@ export default function SearchScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* ========================================== */}
-      {/* MODAL BOTTOM SHEET FILTER */}
-      {/* ========================================== */}
+      {/* MODAL FILTER */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -231,16 +233,12 @@ export default function SearchScreen() {
         onRequestClose={() => setFilterVisible(false)}
       >
         <View className="flex-1 justify-end bg-black/50">
-          {/* Latar gelap yang bisa diklik untuk menutup filter */}
           <TouchableOpacity
             className="flex-1"
             activeOpacity={1}
             onPress={() => setFilterVisible(false)}
           />
-
-          {/* Konten Filter */}
           <View className="bg-white rounded-t-3xl p-6 h-[75%]">
-            {/* Header Filter */}
             <View className="flex-row justify-between items-center mb-6 border-b border-gray-100 pb-4">
               <Text className="text-xl font-extrabold text-[#0D3B66]">
                 Filter Pencarian
@@ -254,7 +252,6 @@ export default function SearchScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} className="mb-4">
-              {/* Seksi 1: Waktu Keberangkatan */}
               <Text className="font-bold text-gray-900 mb-3">
                 Waktu Keberangkatan
               </Text>
@@ -275,7 +272,6 @@ export default function SearchScreen() {
                 ))}
               </View>
 
-              {/* Seksi 2: Fasilitas */}
               <Text className="font-bold text-gray-900 mb-3">
                 Fasilitas Travel
               </Text>
@@ -302,7 +298,6 @@ export default function SearchScreen() {
                 ))}
               </View>
 
-              {/* Seksi 3: Operator / Mitra */}
               <Text className="font-bold text-gray-900 mb-3">Mitra Travel</Text>
               <View className="mb-6">
                 {[
@@ -323,7 +318,6 @@ export default function SearchScreen() {
               </View>
             </ScrollView>
 
-            {/* Tombol Aksi Bawah */}
             <View className="flex-row justify-between items-center pt-2 border-t border-gray-100">
               <TouchableOpacity onPress={() => setFilterVisible(false)}>
                 <Text className="text-gray-500 font-bold px-4">
