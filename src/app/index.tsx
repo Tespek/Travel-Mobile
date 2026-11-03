@@ -1,62 +1,72 @@
-import { Link } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  SafeAreaView,
+  Text,
+  View,
+} from "react-native";
+import Svg, { Path } from "react-native-svg";
 
-export default function WelcomeScreen() {
+export default function SplashScreen() {
+  const router = useRouter();
+  const { width } = Dimensions.get("window");
+
+  useEffect(() => {
+    // Simulasi loading selama 3 detik, lalu pindah ke halaman pilih peran
+    const timer = setTimeout(() => {
+      router.replace("/(auth)/pilih-role"); // <-- Sudah diubah ke pilih-role
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <SafeAreaView className="flex-1 bg-white px-6 pt-8 pb-8 flex-col justify-between">
-      {/* BAGIAN ATAS: Logo & Kartu Biru */}
-      <View>
-        {/* Teks Logo */}
-        <Text className="text-3xl font-extrabold text-[#0D3B66] mb-8 tracking-tighter">
-          jalan<Text className="text-[#00B4D8]">ku.</Text>
+    <SafeAreaView className="flex-1 bg-white relative">
+      {/* KONTEN TENGAH */}
+      <View className="flex-1 items-center justify-center z-10 px-5">
+        {/* Logo */}
+        <Text className="text-5xl font-black text-[#0D3B66] tracking-tight mb-2">
+          Jalan<Text className="text-[#0CA789]">Ku</Text>
         </Text>
 
-        {/* Kartu Hero */}
-        <View className="bg-[#125c7e] rounded-[24px] p-6 overflow-hidden relative min-h-[250px]">
-          <Text className="text-white/80 text-[10px] font-bold tracking-widest mb-4">
-            PERJALANAN JADI MUDAH
-          </Text>
-          <Text className="text-white text-4xl font-bold leading-[42px] mb-3 tracking-tight">
-            Cari Hiace.{"\n"}Bandingkan.{"\n"}Berangkat.
-          </Text>
-          <Text className="text-white/90 text-sm mt-2 max-w-[80%] leading-relaxed">
-            Temukan jadwal, pilih kursi, dan simpan tiket dalam satu aplikasi.
-          </Text>
+        {/* Subtitle Perusahaan */}
+        <Text className="text-[10px] font-bold text-[#64748B] tracking-[2px] mb-8">
+          PT BINTANG LESTARI PUTRA
+        </Text>
 
-          {/* Tempat untuk gambar bus & bintang (ekspor dari Figma nanti) */}
-          {/* <Image source={require('../../assets/images/bus-icon.png')} className="absolute bottom-4 right-4 w-16 h-16" /> */}
+        {/* Tagline */}
+        <Text className="text-sm font-medium text-[#475569] text-center leading-relaxed mb-16">
+          Bersama Mengantarkan{"\n"}Perjalanan yang Lebih Baik.
+        </Text>
+
+        {/* Indikator Loading */}
+        <View className="items-center mt-8">
+          {/* ActivityIndicator standar bawaan React Native */}
+          <ActivityIndicator size="large" color="#0CA789" />
+          <Text className="text-xs font-medium text-[#94A3B8] mt-4">
+            Memuat...
+          </Text>
         </View>
       </View>
 
-      {/* BAGIAN BAWAH: Tombol Aksi & Footer */}
-      <View className="mt-8">
-        {/* Tombol Masuk */}
-        <Link href="/(auth)/login" asChild>
-          <TouchableOpacity className="bg-[#1e5b96] rounded-xl py-4 items-center mb-3 shadow-sm">
-            <Text className="text-white font-bold text-base">
-              Masuk ke akun
-            </Text>
-          </TouchableOpacity>
-        </Link>
-
-        {/* Tombol Buat Akun */}
-        <Link href="/(auth)/register" asChild>
-          <TouchableOpacity className="bg-[#f0f4f8] rounded-xl py-4 items-center mb-6">
-            <Text className="text-[#1e5b96] font-bold text-base">
-              Buat akun baru
-            </Text>
-          </TouchableOpacity>
-        </Link>
-
-        {/* Teks Kebijakan */}
-        <Text className="text-center text-xs text-gray-400 px-4 leading-relaxed">
-          Dengan melanjutkan, kamu menyetujui{" "}
-          <Text className="font-semibold text-gray-500">Syarat Layanan</Text>{" "}
-          dan{" "}
-          <Text className="font-semibold text-gray-500">Kebijakan Privasi</Text>
-          .
-        </Text>
+      {/* VEKTOR LENGKUNGAN (WAVE) DI BAWAH */}
+      <View className="absolute bottom-0 w-full">
+        <Svg height="160" width={width} viewBox="0 0 1440 320">
+          {/* Ombak Belakang (Biru Gelap) */}
+          <Path
+            fill="#0D3B66"
+            fillOpacity="1"
+            d="M0,224L60,213.3C120,203,240,181,360,181.3C480,181,600,203,720,229.3C840,256,960,288,1080,282.7C1200,277,1320,235,1380,213.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
+          />
+          {/* Ombak Depan (Tosca / Teal) */}
+          <Path
+            fill="#0CA789"
+            fillOpacity="1"
+            d="M0,288L60,277.3C120,267,240,245,360,213.3C480,181,600,139,720,149.3C840,160,960,224,1080,250.7C1200,277,1320,267,1380,261.3L1440,256L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
+          />
+        </Svg>
       </View>
     </SafeAreaView>
   );
