@@ -10,9 +10,20 @@ export default function ProfileScreen() {
     router.replace("/(auth)/login");
   };
 
-  // Komponen bantuan (Reusable Component) agar daftar menu lebih rapi
-  const MenuItem = ({ icon, title }: { icon: any; title: string }) => (
-    <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-50 last:border-0">
+  // Komponen bantuan (Reusable Component) dengan tambahan properti onPress
+  const MenuItem = ({
+    icon,
+    title,
+    onPress,
+  }: {
+    icon: any;
+    title: string;
+    onPress?: () => void;
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      className="flex-row items-center justify-between py-4 border-b border-gray-50 last:border-0"
+    >
       <View className="flex-row items-center">
         <Ionicons name={icon} size={22} color="#0D3B66" />
         <Text className="ml-4 font-bold text-[#0D3B66]">{title}</Text>
@@ -58,13 +69,30 @@ export default function ProfileScreen() {
 
         {/* KARTU DAFTAR MENU */}
         <View className="bg-white rounded-[32px] mx-5 px-5 py-2 shadow-sm shadow-black/5 mb-6">
-          <MenuItem icon="person-outline" title="Data diri" />
-          <MenuItem icon="receipt-outline" title="Riwayat dan tiket" />
-          <MenuItem icon="notifications-outline" title="Notifikasi" />
-          <MenuItem icon="information-circle-outline" title="Pusat bantuan" />
+          <MenuItem
+            icon="person-outline"
+            title="Data diri"
+            onPress={() => router.push("/data-diri")}
+          />
+          <MenuItem
+            icon="receipt-outline"
+            title="Riwayat dan tiket"
+            onPress={() => router.push("/riwayat-tiket")}
+          />
+          <MenuItem
+            icon="notifications-outline"
+            title="Notifikasi"
+            onPress={() => router.push("/notifikasi")}
+          />
+          <MenuItem
+            icon="information-circle-outline"
+            title="Pusat bantuan"
+            onPress={() => router.push("/pusat-bantuan")}
+          />
           <MenuItem
             icon="shield-checkmark-outline"
             title="Privasi dan keamanan"
+            onPress={() => router.push("/privasi-keamanan")}
           />
         </View>
 

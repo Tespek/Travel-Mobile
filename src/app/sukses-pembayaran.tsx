@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function SuksesPembayaranScreen() {
@@ -91,7 +91,12 @@ export default function SuksesPembayaranScreen() {
       {/* TOMBOL AKSI BAWAH */}
       <View className="absolute bottom-0 w-full bg-[#F8FAFC] px-5 py-4 pb-6 space-y-3">
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/ticket")}
+          onPress={() =>
+            router.push({
+              pathname: "/(tabs)/ticket",
+              params: { seats: JSON.stringify(seats) },
+            })
+          }
           className="w-full bg-[#0D3B66] py-4 rounded-xl items-center justify-center shadow-sm mb-2"
         >
           <Text className="text-white font-extrabold text-base">
