@@ -55,7 +55,7 @@ export default function PilihRoleScreen() {
         </View>
         <View className="flex-1">
           <Text className="text-lg font-extrabold text-[#10B981] mb-1">
-            Mitra Driver
+            Driver
           </Text>
           <Text className="text-xs text-gray-500 leading-relaxed">
             Kelola orderan dan pantau rute perjalananmu.

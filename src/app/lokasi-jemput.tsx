@@ -1,262 +1,194 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useRouter } from "expo-router";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-export default function LokasiJemputScreen() {
+export default function RutePenjemputanScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
 
-  // Menangkap data kursi dari halaman sebelumnya
-  const seats = params.seats ? JSON.parse(params.seats as string) : [9];
-  const passengerCount = seats.length;
-  const ticketPrice = 180000;
-  const totalPrice = passengerCount * ticketPrice;
+  // Data penumpang berdasarkan titik jemput
+  const dataTitikJemput = {
+    "Terminal Utama": {
+      waktu: "08.00 WIB",
+      info: "1. Dina Melisa (Kursi 01) - Telp: 0812-3456-7890\n2. Ahmad Fauzi (Kursi 02) - Telp: 0813-9876-5432",
+    },
+    "Pool Mitra": {
+      waktu: "08.10 WIB",
+      info: "1. Siti Rahma (Kursi 03) - Telp: 0821-1122-3344",
+    },
+    "Titik Jemput A": {
+      waktu: "08.20 WIB",
+      info: "1. Rizky Pratama (Kursi 04) - Telp: 0852-5566-7788",
+    },
+  };
 
-  const [pickupMode, setPickupMode] = useState<"sama" | "berbeda">("sama");
+  const handleBukaPopup = (namaLokasi: string) => {
+    const detail = dataTitikJemput[namaLokasi as keyof typeof dataTitikJemput];
+    if (detail) {
+      Alert.alert(
+        `📍 ${namaLokasi}`,
+        `Waktu: ${detail.waktu}\n\nDaftar Penumpang:\n${detail.info}`,
+        [{ text: "OK", style: "default" }],
+      );
+    }
+  };
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-[#F8FAFC]"
-      style={{
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-      }}
-    >
-      {/* HEADER & PROGRESS BAR */}
-      <View className="bg-[#F8FAFC] pt-4 pb-2 z-10">
-        <View className="flex-row items-center px-5 mb-2">
-          <View className="h-1 flex-1 bg-[#00B4D8] rounded-full mr-2" />
-          <View className="h-1 flex-1 bg-[#00B4D8] rounded-full mr-2" />
-          <View className="h-1 flex-1 bg-[#00B4D8] rounded-full mr-2" />
-          <View className="h-1 flex-1 bg-[#00B4D8] rounded-full" />
-        </View>
-
-        <View className="px-5 py-2">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="w-8 h-8 items-center justify-center -ml-2"
-          >
-            <Ionicons name="arrow-back" size={24} color="#0D3B66" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-      >
+    <SafeAreaView className="flex-1 bg-[#0D3B66]">
+      <StatusBar barStyle="light-content" backgroundColor="#0D3B66" />
+      <View className="flex-1 bg-[#F8FAFC]">
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
         >
-          {/* JUDUL */}
-          <View className="px-5 mb-6">
-            <Text className="text-2xl font-black text-[#0D3B66] mb-2">
-              Titik jemput penumpang
-            </Text>
-            <Text className="text-xs text-gray-500 leading-relaxed font-medium">
-              Pilih apakah semua penumpang naik di lokasi yang sama atau
-              memiliki titik jemput berbeda.
-            </Text>
-          </View>
-
-          {/* PILIHAN MODE JEMPUT */}
-          <View className="px-5 mb-4">
-            {/* Opsi 1: Sama */}
-            <TouchableOpacity
-              onPress={() => setPickupMode("sama")}
-              className={`p-4 rounded-xl border mb-4 flex-row justify-between items-center ${
-                pickupMode === "sama"
-                  ? "border-[#0D3B66] bg-white"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <View className="flex-1 pr-4">
-                <Text
-                  className={`font-bold text-sm ${pickupMode === "sama" ? "text-[#0D3B66]" : "text-gray-700"}`}
-                >
-                  Semua naik di tempat yang sama
+          {/* HEADER BIRU GELAP */}
+          <View className="bg-[#0D3B66] px-6 pt-10 pb-8 rounded-b-[40px]">
+            <View className="flex-row justify-between items-center mb-8">
+              <View className="flex-row items-center">
+                <Text className="text-xl font-black text-white tracking-tighter">
+                  <Text className="text-[#0CA789]">✦ Jalan</Text>Ku
                 </Text>
-                <Text className="text-[10px] text-gray-500 mt-1 font-medium">
-                  Satu lokasi berlaku untuk seluruh penumpang.
+                <Text className="text-[10px] font-bold text-gray-300 ml-2 mt-1 uppercase tracking-widest">
+                  Driver
                 </Text>
               </View>
-              <Ionicons
-                name={
-                  pickupMode === "sama" ? "radio-button-on" : "radio-button-off"
-                }
-                size={24}
-                color={pickupMode === "sama" ? "#0D3B66" : "#D1D5DB"}
-              />
-            </TouchableOpacity>
-
-            {/* Opsi 2: Berbeda */}
-            <TouchableOpacity
-              onPress={() => setPickupMode("berbeda")}
-              className={`p-4 rounded-xl border flex-row justify-between items-center ${
-                pickupMode === "berbeda"
-                  ? "border-[#0D3B66] bg-white"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <View className="flex-1 pr-4">
-                <Text
-                  className={`font-bold text-sm ${pickupMode === "berbeda" ? "text-[#0D3B66]" : "text-gray-700"}`}
-                >
-                  Titik jemput berbeda
-                </Text>
-                <Text className="text-[10px] text-gray-500 mt-1 font-medium">
-                  Atur lokasi satu per satu untuk setiap penumpang.
-                </Text>
-              </View>
-              <Ionicons
-                name={
-                  pickupMode === "berbeda"
-                    ? "radio-button-on"
-                    : "radio-button-off"
-                }
-                size={24}
-                color={pickupMode === "berbeda" ? "#0D3B66" : "#D1D5DB"}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* FORM JIKA "SAMA" */}
-          {pickupMode === "sama" && (
-            <View className="px-5 mb-6">
-              <Text className="text-xs font-bold text-[#0D3B66] mb-2">
-                Titik jemput bersama
-              </Text>
-              <TouchableOpacity className="border border-gray-200 rounded-xl px-4 py-3.5 bg-white flex-row justify-between items-center mb-4">
-                <Text className="text-sm text-gray-900 font-medium">
-                  Terminal Batoh
-                </Text>
-                <Ionicons name="chevron-down" size={18} color="#0D3B66" />
+              {/* Tombol Back */}
+              <TouchableOpacity
+                onPress={() => router.back()}
+                className="w-10 h-10 bg-white/10 rounded-full justify-center items-center border border-white/20"
+              >
+                <Ionicons name="arrow-back" size={20} color="white" />
               </TouchableOpacity>
-
-              <Text className="text-xs font-bold text-[#0D3B66] mb-2">
-                Catatan penjemputan (opsional)
-              </Text>
-              <TextInput
-                className="border border-gray-200 rounded-xl px-4 py-3.5 bg-white text-sm text-gray-900 font-medium"
-                placeholder="Contoh: dekat pintu masuk utama"
-                placeholderTextColor="#9CA3AF"
-              />
             </View>
-          )}
 
-          {/* FORM DINAMIS JIKA "BERBEDA" (MENGULANG SESUAI JUMLAH KURSI) */}
-          {pickupMode === "berbeda" && (
-            <View className="px-5 mb-6">
-              {seats.map((seatNumber: number, index: number) => (
-                <View
-                  key={seatNumber}
-                  className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-4"
-                >
-                  <View className="flex-row justify-between items-center mb-4">
-                    <Text className="text-base font-bold text-[#0D3B66]">
-                      Penumpang {index + 1}
-                    </Text>
-                    <View className="bg-blue-50 px-3 py-1.5 rounded-full">
-                      <Text className="text-[#00B4D8] text-xs font-extrabold">
-                        Kursi {seatNumber}
-                      </Text>
-                    </View>
-                  </View>
+            <Text className="text-2xl font-bold text-white mb-1">
+              Rute & Penjemputan
+            </Text>
+            <Text className="text-sm text-gray-300">
+              Urutan lokasi penjemputan hari ini
+            </Text>
+          </View>
 
-                  <Text className="text-xs font-bold text-gray-700 mb-2">
-                    Pilih titik jemput
-                  </Text>
-                  <TouchableOpacity className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 flex-row justify-between items-center mb-4">
-                    <Text className="text-sm text-gray-900 font-medium">
-                      Terminal Batoh
-                    </Text>
-                    <Ionicons name="chevron-down" size={18} color="#0D3B66" />
-                  </TouchableOpacity>
+          {/* KONTEN UTAMA */}
+          <View className="px-6 mt-6">
+            <Text className="text-lg font-bold text-[#1e293b] mb-1">
+              Rute & Titik Jemput
+            </Text>
+            <Text className="text-xs text-gray-500 mb-4">
+              Ketuk salah satu titik di bawah untuk melihat detail penumpang.
+            </Text>
 
-                  <Text className="text-xs font-bold text-gray-700 mb-2">
-                    Catatan penjemputan (opsional)
-                  </Text>
-                  <TextInput
-                    className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 text-sm text-gray-900 font-medium"
-                    placeholder="Contoh: Jemput di depan minimarket"
-                    placeholderTextColor="#9CA3AF"
-                  />
+            {/* ILUSTRASI PETA / KARTU PETA */}
+            <View className="bg-[#E6F4EA] rounded-3xl h-44 mb-4 justify-center items-center relative overflow-hidden border border-gray-100 shadow-sm">
+              <View className="absolute inset-0 opacity-20 bg-[radial-gradient(#0CA789_1px,transparent_1px)] [background-size:16px_16px]" />
+              <View className="w-full h-full absolute justify-center items-center">
+                <View className="w-4/5 h-2 bg-[#A3E4D7] rotate-12 rounded-full absolute" />
+                <View className="w-3/5 h-2 bg-[#A3E4D7] -rotate-12 rounded-full absolute" />
+              </View>
+              <View className="absolute left-20 top-12 bg-[#0CA789] px-3 py-1.5 rounded-full flex-row items-center shadow">
+                <Ionicons name="location" size={14} color="white" />
+                <Text className="text-white text-xs font-bold ml-1">1</Text>
+              </View>
+              <View className="absolute right-24 bottom-12 bg-[#0D3B66] px-3 py-1.5 rounded-full flex-row items-center shadow">
+                <Ionicons name="location" size={14} color="white" />
+                <Text className="text-white text-xs font-bold ml-1">2</Text>
+              </View>
+            </View>
+
+            {/* BANNER PERINGATAN GPS */}
+            <View className="bg-amber-50 border border-amber-200/60 rounded-2xl p-3.5 mb-6">
+              <Text className="text-xs text-amber-800 text-center font-medium">
+                Peta ini hanya ilustrasi. Navigasi GPS belum terhubung.
+              </Text>
+            </View>
+
+            {/* URUTAN PENJEMPUTAN (BISA DIKLIK) */}
+            <Text className="text-base font-bold text-[#1e293b] mb-4">
+              Urutan penjemputan (Ketuk untuk detail)
+            </Text>
+
+            {/* ITEM 1: Terminal Utama */}
+            <TouchableOpacity
+              onPress={() => handleBukaPopup("Terminal Utama")}
+              className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex-row items-center justify-between mb-3"
+            >
+              <View className="flex-row items-center flex-1">
+                <View className="w-11 h-11 bg-emerald-50 rounded-2xl justify-center items-center mr-3">
+                  <Text className="text-[#0CA789] font-bold text-base">1</Text>
                 </View>
-              ))}
-            </View>
-          )}
-
-          {/* KARTU RINGKASAN */}
-          <View className="px-5 mb-6">
-            <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-              <View className="flex-row justify-between mb-3">
-                <Text className="text-xs text-gray-400 font-medium">
-                  Operator
-                </Text>
-                <Text className="text-xs font-bold text-[#0D3B66]">
-                  PT Bintang Lestari Putra
-                </Text>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-[#1e293b]">
+                    Terminal Utama
+                  </Text>
+                  <Text className="text-xs text-gray-400 mt-0.5">
+                    08.00 WIB • 2 penumpang (Ketuk untuk lihat)
+                  </Text>
+                </View>
               </View>
-              <View className="flex-row justify-between mb-6">
-                <Text className="text-xs text-gray-400 font-medium">
-                  Penumpang / kursi
-                </Text>
-                <Text className="text-xs font-bold text-[#0D3B66]">
-                  {passengerCount} orang • kursi {seats.join(", ")}
-                </Text>
-              </View>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
 
-              <Text className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-3">
-                RINGKASAN TITIK JEMPUT
+            {/* ITEM 2: Pool Mitra */}
+            <TouchableOpacity
+              onPress={() => handleBukaPopup("Pool Mitra")}
+              className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex-row items-center justify-between mb-3"
+            >
+              <View className="flex-row items-center flex-1">
+                <View className="w-11 h-11 bg-emerald-50 rounded-2xl justify-center items-center mr-3">
+                  <Text className="text-[#0CA789] font-bold text-base">2</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-[#1e293b]">
+                    Pool Mitra
+                  </Text>
+                  <Text className="text-xs text-gray-400 mt-0.5">
+                    08.10 WIB • 1 penumpang (Ketuk untuk lihat)
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            {/* ITEM 3: Titik Jemput A */}
+            <TouchableOpacity
+              onPress={() => handleBukaPopup("Titik Jemput A")}
+              className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex-row items-center justify-between mb-6"
+            >
+              <View className="flex-row items-center flex-1">
+                <View className="w-11 h-11 bg-emerald-50 rounded-2xl justify-center items-center mr-3">
+                  <Text className="text-[#0CA789] font-bold text-base">3</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-[#1e293b]">
+                    Titik Jemput A
+                  </Text>
+                  <Text className="text-xs text-gray-400 mt-0.5">
+                    08.20 WIB • 1 penumpang (Ketuk untuk lihat)
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            {/* TOMBOL AKSI KE SEMUA PENUMPANG */}
+            <TouchableOpacity
+              onPress={() => router.push("/penumpang")}
+              className="w-full bg-[#0CA789] py-4 rounded-2xl items-center shadow-sm"
+            >
+              <Text className="text-white text-sm font-bold">
+                Lihat Semua Penumpang
               </Text>
-              <View className="flex-row justify-between items-start mb-6">
-                <Text className="text-xs text-gray-500 font-medium flex-1 mr-4">
-                  Aulia Fauzi • Kursi {seats[0]}
-                </Text>
-                <Text className="text-xs font-bold text-[#0D3B66] text-right">
-                  Terminal Batoh
-                </Text>
-              </View>
-
-              <View className="flex-row justify-between items-center pt-5 border-t border-gray-100">
-                <Text className="text-xs text-gray-400 font-medium">
-                  Harga tiket
-                </Text>
-                <Text className="text-lg font-black text-[#0D3B66]">
-                  Rp{totalPrice.toLocaleString("id-ID")}
-                </Text>
-              </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
-
-      {/* STICKY BOTTOM BUTTON DENGAN NAVIGASI KE PEMBAYARAN */}
-      <View className="absolute bottom-0 w-full bg-[#F8FAFC] px-5 py-4 pb-6">
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/pembayaran",
-              params: { seats: JSON.stringify(seats) },
-            })
-          }
-          className="bg-[#0D3B66] py-4 rounded-xl items-center flex-row justify-center shadow-sm"
-        >
-          <Text className="text-white font-extrabold text-base">
-            Lanjut ke pembayaran →
-          </Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

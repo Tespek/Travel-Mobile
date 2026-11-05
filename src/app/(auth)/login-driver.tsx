@@ -1,15 +1,15 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -39,8 +39,8 @@ export default function LoginDriverScreen() {
             {/* BAGIAN ATAS: Logo & Badge */}
             <View className="items-center mb-8">
               {/* Logo */}
-              <Text className="text-4xl font-black text-[#0D3B66] tracking-tighter mb-1">
-                <Text className="text-[#0CA789]">Jalan</Text>Ku
+              <Text className="text-4xl font-black text-[#0CA789] tracking-tighter mb-1">
+                <Text className="text-[#0D3B66]">Jalan</Text>Ku
               </Text>
 
               {/* Subtitle */}
@@ -110,6 +110,20 @@ export default function LoginDriverScreen() {
               >
                 <Text className="text-white text-base font-bold">Masuk</Text>
               </TouchableOpacity>
+
+              {/* NAVIGASI BARU: Pindah ke Register Driver */}
+              <View className="flex-row justify-center items-center mt-6">
+                <Text className="text-xs text-gray-500">
+                  Belum punya akun mitra?{" "}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(auth)/register-driver")}
+                >
+                  <Text className="text-xs font-bold text-[#0CA789]">
+                    Daftar di sini
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Teks Footer */}

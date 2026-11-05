@@ -21,7 +21,7 @@ export default function WelcomeDriverScreen() {
           {/* Banner Khusus Driver */}
           <View className="bg-[#087F6C] rounded-3xl p-8 shadow-sm">
             <Text className="text-white/80 text-xs font-black tracking-widest mb-4 uppercase">
-              MITRA JALANKU
+              DRIVER JALANKU
             </Text>
             <Text className="text-white text-4xl font-black mb-1">
               Ambil Order.
@@ -39,7 +39,7 @@ export default function WelcomeDriverScreen() {
         <View>
           {/* Tombol Masuk */}
           <TouchableOpacity
-            onPress={() => router.push("/(auth)/login-driver")} // <-- SUDAH DIPERBAIKI DI SINI
+            onPress={() => router.push("/(auth)/login-driver")}
             className="bg-[#0D3B66] py-4 rounded-xl items-center mb-3 shadow-sm"
           >
             <Text className="text-white text-base font-bold">
@@ -49,11 +49,11 @@ export default function WelcomeDriverScreen() {
 
           {/* Tombol Daftar */}
           <TouchableOpacity
-            onPress={() => router.push("/(auth)/register")}
+            onPress={() => router.push("/(auth)/register-driver")} // <-- SUDAH DIPERBAIKI MENGARAH KE REGISTER DRIVER
             className="bg-[#F8FAFC] py-4 rounded-xl items-center mb-8 border border-gray-100"
           >
             <Text className="text-[#0D3B66] text-base font-bold">
-              Buat akun mitra baru
+              Buat akun driver baru
             </Text>
           </TouchableOpacity>
 
