@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
+import { create } from "zustand";
 import api from "../services/api";
 
 interface User {
@@ -29,6 +29,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     const token = await SecureStore.getItemAsync("auth_token");
     if (token) {
       set({ token });
+      // Ambil data user dari API agar profil tetap tampil setelah app restart
+      try {
+        const response = await api.get("/user");
+        set({ user: response.data });
+      } catch {
+        // Token tidak valid, hapus
+        await SecureStore.deleteItemAsync("auth_token");
+        set({ token: null });
+      }
     }
   },
 
@@ -36,6 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const response = await api.post("/login", { email, password });
+      console.log("LOGIN RESPONSE:", JSON.stringify(response.data));
       const { token, user } = response.data;
       await SecureStore.setItemAsync("auth_token", token);
       set({ token, user, isLoading: false });
@@ -55,6 +65,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         password,
         password_confirmation: passwordConfirmation,
       });
+      console.log("REGISTER RESPONSE:", JSON.stringify(response.data));
       const { token, user } = response.data;
       await SecureStore.setItemAsync("auth_token", token);
       set({ token, user, isLoading: false });

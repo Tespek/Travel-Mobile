@@ -34,7 +34,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? "home" : "home-outline"}
               size={24}
-              color={color}
+              color={color as string}
             />
           ),
         }}
@@ -46,7 +46,7 @@ export default function TabLayout() {
         options={{
           title: "Cari",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="search-outline" size={24} color={color} />
+            <Ionicons name="search-outline" size={24} color={color as string} />
           ),
         }}
       />
@@ -57,7 +57,7 @@ export default function TabLayout() {
         options={{
           title: "Tiket",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="ticket-outline" size={24} color={color} />
+            <Ionicons name="ticket-outline" size={24} color={color as string} />
           ),
         }}
       />
@@ -68,7 +68,7 @@ export default function TabLayout() {
         options={{
           title: "Akun",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="happy-outline" size={24} color={color} />
+            <Ionicons name="happy-outline" size={24} color={color as string} />
           ),
         }}
       />

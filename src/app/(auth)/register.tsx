@@ -1,16 +1,18 @@
 /// <reference types="nativewind/types" />
+import { useAuthStore } from "@/stores/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -24,9 +26,46 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleRegister = () => {
-    // Simulasi langsung masuk ke beranda setelah daftar
-    router.replace("/(tabs)");
+  const { register, isLoading } = useAuthStore();
+
+  const handleRegister = async () => {
+    if (!name.trim() || !email.trim() || !phone.trim() || !password || !confirmPassword) {
+      Alert.alert("Peringatan", "Semua kolom harus diisi.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Peringatan", "Kata sandi dan konfirmasi kata sandi tidak cocok.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Peringatan", "Kata sandi minimal 6 karakter.");
+      return;
+    }
+
+    try {
+      await register(name.trim(), email.trim(), phone.trim(), password, confirmPassword);
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      // Ambil pesan error spesifik dari API (validasi Laravel biasanya ada di errors)
+      const apiErrors = error?.response?.data?.errors;
+      const apiMessage = error?.response?.data?.message;
+
+      let message = "Pendaftaran gagal. Coba lagi beberapa saat.";
+
+      if (apiErrors) {
+        // Laravel validation errors: { field: ["pesan error"] }
+        const firstError = Object.values(apiErrors as Record<string, string[]>)[0];
+        message = Array.isArray(firstError) ? firstError[0] : String(firstError);
+      } else if (apiMessage) {
+        message = apiMessage;
+      } else if (error?.message) {
+        message = error.message;
+      }
+
+      Alert.alert("Pendaftaran Gagal", message);
+    }
   };
 
   return (
@@ -190,9 +229,12 @@ export default function RegisterScreen() {
               {/* Tombol Daftar */}
               <TouchableOpacity
                 onPress={handleRegister}
+                disabled={isLoading}
                 className="bg-[#0D3B66] rounded-2xl py-4 items-center shadow-lg shadow-blue-900/30 mb-6"
               >
-                <Text className="text-white font-bold text-lg">Daftar</Text>
+                <Text className="text-white font-bold text-lg">
+                  {isLoading ? "Memproses..." : "Daftar"}
+                </Text>
               </TouchableOpacity>
 
               {/* Link Masuk */}

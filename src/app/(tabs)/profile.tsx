@@ -1,13 +1,29 @@
 /// <reference types="nativewind/types" />
+import { useAuthStore } from "@/stores/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
-  // Fungsi simulasi untuk tombol Keluar
+  const { logout, user } = useAuthStore();
+
   const handleLogout = () => {
-    router.replace("/(auth)/login");
+    Alert.alert(
+      "Keluar",
+      "Apakah kamu yakin ingin keluar dari akun ini?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Keluar",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace("/(auth)/login");
+          },
+        },
+      ]
+    );
   };
 
   // Komponen bantuan (Reusable Component) dengan tambahan properti onPress
@@ -53,16 +69,26 @@ export default function ProfileScreen() {
         {/* KARTU PROFIL UTAMA */}
         <View className="bg-white rounded-[32px] mx-5 p-6 shadow-sm shadow-black/5 items-center mb-6">
           <View className="w-20 h-20 bg-blue-50 rounded-full items-center justify-center mb-4">
-            <Text className="text-2xl font-extrabold text-[#1e5b96]">DF</Text>
+            <Text className="text-2xl font-extrabold text-[#1e5b96]">
+              {user?.name
+                ? user.name
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((n) => n[0].toUpperCase())
+                    .join("")
+                : "?"}
+            </Text>
           </View>
           <Text className="text-xl font-extrabold text-[#0D3B66] mb-1">
-            Dul Fitri
+            {user?.name ?? "-"}
           </Text>
-          <Text className="text-gray-400 text-sm mb-4">dul@test.com</Text>
+          <Text className="text-gray-400 text-sm mb-4">
+            {user?.email ?? "-"}
+          </Text>
 
           <View className="bg-blue-50/70 px-4 py-2 rounded-full">
             <Text className="text-[#1e5b96] text-xs font-bold">
-              Akun terverifikasi (demo)
+              Akun terverifikasi
             </Text>
           </View>
         </View>

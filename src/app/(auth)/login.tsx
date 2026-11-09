@@ -1,8 +1,10 @@
 /// <reference types="nativewind/types" />
+import { useAuthStore } from "@/stores/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,8 +21,23 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = () => {
-    router.replace("/(tabs)");
+  const { login, isLoading } = useAuthStore();
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Peringatan", "Email dan kata sandi tidak boleh kosong.");
+      return;
+    }
+
+    try {
+      await login(email.trim(), password);
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ??
+        "Login gagal. Periksa email dan kata sandi kamu.";
+      Alert.alert("Login Gagal", message);
+    }
   };
 
   return (
@@ -126,9 +143,12 @@ export default function LoginScreen() {
 
               <TouchableOpacity
                 onPress={handleLogin}
+                disabled={isLoading}
                 className="bg-[#0D3B66] rounded-2xl py-4 items-center shadow-lg shadow-blue-900/30 mb-6"
               >
-                <Text className="text-white font-bold text-lg">Masuk</Text>
+                <Text className="text-white font-bold text-lg">
+                  {isLoading ? "Memproses..." : "Masuk"}
+                </Text>
               </TouchableOpacity>
 
               <View className="flex-row justify-center mb-2">

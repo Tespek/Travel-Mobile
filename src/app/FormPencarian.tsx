@@ -1,7 +1,13 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router"; // Tambahan alat navigasi
-import { useState } from "react";
+/// <reference types="nativewind/types" />
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -10,65 +16,123 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getCities, type City } from "../services/scheduleService";
 
 export default function FormPencarianScreen() {
-  // Nama disesuaikan dengan nama file
-  const router = useRouter(); // Mengaktifkan router
-  const [origin, setOrigin] = useState("Lhokseumawe");
-  const [destination, setDestination] = useState("Medan");
+  const router = useRouter();
 
-  // Fitur interaktif untuk menukar posisi kota keberangkatan dan tujuan
+  const [cities, setCities] = useState<City[]>([]);
+  const [isLoadingCities, setIsLoadingCities] = useState(true);
+
+  const [originCity, setOriginCity] = useState<City | null>(null);
+  const [destinationCity, setDestinationCity] = useState<City | null>(null);
+  const [departureDate, setDepartureDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // format YYYY-MM-DD
+  });
+
+  const [modalType, setModalType] = useState<"origin" | "destination" | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Ambil daftar kota dari API
+  useEffect(() => {
+    getCities()
+      .then(setCities)
+      .catch(() => Alert.alert("Error", "Gagal memuat daftar kota."))
+      .finally(() => setIsLoadingCities(false));
+  }, []);
+
   const handleSwap = () => {
-    setOrigin(destination);
-    setDestination(origin);
+    const temp = originCity;
+    setOriginCity(destinationCity);
+    setDestinationCity(temp);
+  };
+
+  const handleSearch = () => {
+    if (!originCity || !destinationCity) {
+      Alert.alert("Peringatan", "Pilih kota asal dan tujuan terlebih dahulu.");
+      return;
+    }
+    if (originCity.id === destinationCity.id) {
+      Alert.alert("Peringatan", "Kota asal dan tujuan tidak boleh sama.");
+      return;
+    }
+
+    router.push({
+      pathname: "/schedules",
+      params: {
+        origin_city_id: originCity.id,
+        destination_city_id: destinationCity.id,
+        departure_date: departureDate,
+        origin_name: originCity.name,
+        destination_name: destinationCity.name,
+      },
+    } as any);
+  };
+
+  // Format tanggal untuk tampilan
+  const formatDisplayDate = (dateStr: string) => {
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Navigasi tanggal +1 / -1 hari
+  const changeDate = (delta: number) => {
+    const date = new Date(departureDate + "T00:00:00");
+    date.setDate(date.getDate() + delta);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) return; // tidak bisa pilih tanggal lampau
+    setDepartureDate(date.toISOString().split("T")[0]);
   };
 
   return (
     <SafeAreaView
       className="flex-1 bg-[#F8FAFC]"
-      style={{
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-      }}
+      style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header Latar Biru Tua Khas JalanKu */}
-        <View className="bg-[#0D3B66] px-6 pt-6 pb-24 rounded-b-[40px] relative">
-          {/* Tombol Kembali / Tutup */}
+        {/* Header */}
+        <View className="bg-[#0D3B66] px-6 pt-6 pb-24 rounded-b-[40px]">
           <TouchableOpacity
-            onPress={() => router.back()} // Fungsi untuk kembali ke layar sebelumnya
+            onPress={() => router.back()}
             className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mb-4"
           >
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-
-          <Text className="text-white text-3xl font-black mb-2">
-            Ubah rute?
-          </Text>
+          <Text className="text-white text-3xl font-black mb-2">Cari tiket</Text>
           <Text className="text-[#00B4D8] text-sm font-medium">
-            Sesuaikan kota asal, tujuan, dan tanggal keberangkatan.
+            Pilih kota asal, tujuan, dan tanggal keberangkatan.
           </Text>
         </View>
 
-        {/* Kartu Form Pencarian (Melayang / Floating UI) */}
+        {/* Kartu Form */}
         <View className="px-5 -mt-16">
           <View className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
-            {/* Input Asal & Tujuan */}
+
+            {/* Asal */}
             <View className="relative">
-              <TouchableOpacity className="flex-row items-center border-b border-gray-100 pb-5 mb-5 mt-2">
+              <TouchableOpacity
+                onPress={() => setModalType("origin")}
+                className="flex-row items-center border-b border-gray-100 pb-5 mb-5 mt-2"
+              >
                 <View className="w-10 h-10 bg-blue-50 rounded-full items-center justify-center mr-4">
                   <Ionicons name="location" size={20} color="#0D3B66" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-400 font-bold mb-1 uppercase tracking-wider">
-                    Dari
-                  </Text>
-                  <Text className="text-lg font-black text-gray-900">
-                    {origin}
+                  <Text className="text-xs text-gray-400 font-bold mb-1 uppercase tracking-wider">Dari</Text>
+                  <Text className={`text-lg font-black ${originCity ? "text-gray-900" : "text-gray-300"}`}>
+                    {originCity ? originCity.name : "Pilih kota asal"}
                   </Text>
                 </View>
+                <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
               </TouchableOpacity>
 
-              {/* Tombol Tukar Rute (Swap) di tengah-tengah */}
+              {/* Tombol Swap */}
               <TouchableOpacity
                 onPress={handleSwap}
                 className="absolute right-4 top-10 bg-blue-50 w-12 h-12 rounded-full items-center justify-center border-4 border-white z-10 shadow-sm"
@@ -76,139 +140,126 @@ export default function FormPencarianScreen() {
                 <Ionicons name="swap-vertical" size={24} color="#00B4D8" />
               </TouchableOpacity>
 
-              <TouchableOpacity className="flex-row items-center pb-2">
+              {/* Tujuan */}
+              <TouchableOpacity
+                onPress={() => setModalType("destination")}
+                className="flex-row items-center pb-2"
+              >
                 <View className="w-10 h-10 bg-red-50 rounded-full items-center justify-center mr-4">
                   <Ionicons name="location-outline" size={20} color="#ef4444" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-400 font-bold mb-1 uppercase tracking-wider">
-                    Ke
-                  </Text>
-                  <Text className="text-lg font-black text-gray-900">
-                    {destination}
+                  <Text className="text-xs text-gray-400 font-bold mb-1 uppercase tracking-wider">Ke</Text>
+                  <Text className={`text-lg font-black ${destinationCity ? "text-gray-900" : "text-gray-300"}`}>
+                    {destinationCity ? destinationCity.name : "Pilih kota tujuan"}
                   </Text>
                 </View>
+                <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
               </TouchableOpacity>
             </View>
 
-            {/* Garis Pemisah */}
             <View className="h-[1px] bg-gray-100 my-5" />
 
-            {/* Tanggal & Penumpang */}
-            <View className="flex-row justify-between mb-6">
-              <TouchableOpacity className="flex-1 flex-row items-center bg-gray-50 p-3 rounded-2xl mr-2 border border-gray-100">
-                <Ionicons
-                  name="calendar"
-                  size={22}
-                  color="#f97316"
-                  className="mr-3"
+            {/* Pilih Tanggal */}
+            <View className="mb-6">
+              <Text className="text-xs text-gray-400 font-bold mb-3 uppercase tracking-wider">
+                Tanggal Keberangkatan
+              </Text>
+              <View className="flex-row items-center justify-between bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100">
+                <TouchableOpacity onPress={() => changeDate(-1)} className="p-2">
+                  <Ionicons name="chevron-back" size={20} color="#0D3B66" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} className="items-center">
+                  <Ionicons name="calendar" size={16} color="#f97316" />
+                  <Text className="text-base font-extrabold text-[#0D3B66] mt-1">
+                    {formatDisplayDate(departureDate)}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => changeDate(1)} className="p-2">
+                  <Ionicons name="chevron-forward" size={20} color="#0D3B66" />
+                </TouchableOpacity>
+              </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={new Date(departureDate + "T00:00:00")}
+                  mode="date"
+                  display="spinner"
+                  minimumDate={new Date()}
+                  onChange={(_event: unknown, selectedDate?: Date) => {
+                    setShowDatePicker(false);
+                    if (selectedDate) {
+                      const y = selectedDate.getFullYear();
+                      const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                      const d = String(selectedDate.getDate()).padStart(2, "0");
+                      setDepartureDate(`${y}-${m}-${d}`);
+                    }
+                  }}
                 />
-                <View className="ml-2">
-                  <Text className="text-[10px] text-gray-400 font-bold uppercase mb-0.5">
-                    Tanggal
-                  </Text>
-                  <Text className="text-sm font-extrabold text-[#0D3B66]">
-                    2 Nov 26
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity className="flex-1 flex-row items-center bg-gray-50 p-3 rounded-2xl ml-2 border border-gray-100">
-                <Ionicons
-                  name="people"
-                  size={22}
-                  color="#22c55e"
-                  className="mr-3"
-                />
-                <View className="ml-2">
-                  <Text className="text-[10px] text-gray-400 font-bold uppercase mb-0.5">
-                    Kursi
-                  </Text>
-                  <Text className="text-sm font-extrabold text-[#0D3B66]">
-                    1 Orang
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              )}
             </View>
 
-            {/* Tombol Cari Utama */}
+            {/* Tombol Cari */}
             <TouchableOpacity
-              onPress={() => router.push("/search")} // Fungsi untuk berpindah ke halaman daftar tiket
-              className="bg-[#1e5b96] rounded-2xl py-4 items-center justify-center flex-row shadow-sm shadow-blue-900/20 mt-2"
+              onPress={handleSearch}
+              className="bg-[#1e5b96] rounded-2xl py-4 items-center justify-center flex-row shadow-sm"
             >
               <Ionicons name="search" size={20} color="white" />
               <Text className="text-white font-extrabold text-base ml-2">
-                Simpan & Cari Tiket
+                Cari Tiket
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Bagian Riwayat Rute */}
-        <View className="px-5 mt-8 mb-6">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-black text-[#0D3B66]">
-              Riwayat Pencarian
-            </Text>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="-mx-5 px-5"
-          >
-            <TouchableOpacity className="bg-white p-4 rounded-2xl mr-4 border border-gray-100 shadow-sm w-44">
-              <View className="bg-blue-50 w-10 h-10 rounded-full items-center justify-center mb-3">
-                <MaterialCommunityIcons
-                  name="bus-side"
-                  size={20}
-                  color="#0D3B66"
-                />
-              </View>
-              <Text className="font-extrabold text-[#0D3B66] text-base">
-                Banda Aceh
-              </Text>
-              <Ionicons
-                name="arrow-down"
-                size={14}
-                color="#9ca3af"
-                style={{ marginVertical: 4 }}
-              />
-              <Text className="font-extrabold text-[#0D3B66] text-base mb-2">
-                Lhokseumawe
-              </Text>
-              <Text className="text-[#00B4D8] text-xs font-bold">
-                Mulai Rp120.000
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="bg-white p-4 rounded-2xl mr-4 border border-gray-100 shadow-sm w-44">
-              <View className="bg-blue-50 w-10 h-10 rounded-full items-center justify-center mb-3">
-                <MaterialCommunityIcons
-                  name="bus-side"
-                  size={20}
-                  color="#0D3B66"
-                />
-              </View>
-              <Text className="font-extrabold text-[#0D3B66] text-base">
-                Lhokseumawe
-              </Text>
-              <Ionicons
-                name="arrow-down"
-                size={14}
-                color="#9ca3af"
-                style={{ marginVertical: 4 }}
-              />
-              <Text className="font-extrabold text-[#0D3B66] text-base mb-2">
-                Medan
-              </Text>
-              <Text className="text-[#00B4D8] text-xs font-bold">
-                Mulai Rp150.000
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
         </View>
       </ScrollView>
+
+      {/* Modal Pilih Kota */}
+      <Modal
+        visible={modalType !== null}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalType(null)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <TouchableOpacity className="flex-1" onPress={() => setModalType(null)} />
+          <View className="bg-white rounded-t-3xl p-6 h-[70%]">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-lg font-extrabold text-[#0D3B66]">
+                {modalType === "origin" ? "Pilih Kota Asal" : "Pilih Kota Tujuan"}
+              </Text>
+              <TouchableOpacity onPress={() => setModalType(null)}>
+                <Ionicons name="close" size={24} color="#0D3B66" />
+              </TouchableOpacity>
+            </View>
+
+            {isLoadingCities ? (
+              <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="large" color="#0D3B66" />
+                <Text className="text-gray-400 mt-3">Memuat kota...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={cities}
+                keyExtractor={(item) => String(item.id)}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (modalType === "origin") setOriginCity(item);
+                      else setDestinationCity(item);
+                      setModalType(null);
+                    }}
+                    className="flex-row items-center py-4 border-b border-gray-50"
+                  >
+                    <Ionicons name="location-outline" size={20} color="#9CA3AF" />
+                    <Text className="ml-3 text-base font-semibold text-gray-800">
+                      {item.name}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

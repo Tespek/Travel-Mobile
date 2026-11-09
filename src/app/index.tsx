@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  SafeAreaView,
-  Text,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    SafeAreaView,
+    Text,
+    View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -14,11 +14,9 @@ export default function SplashScreen() {
   const { width } = Dimensions.get("window");
 
   useEffect(() => {
-    // Simulasi loading selama 3 detik, lalu pindah ke halaman pilih peran
     const timer = setTimeout(() => {
-      router.replace("/(auth)/pilih-role"); // <-- Sudah diubah ke pilih-role
+      router.replace("/(auth)/pilih-role");
     }, 3000);
-
     return () => clearTimeout(timer);
   }, []);
 
