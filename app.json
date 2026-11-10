@@ -17,6 +17,11 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": [
+          "ACCESS_FINE_LOCATION",
+          "ACCESS_COARSE_LOCATION"
+        ],
+        
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -25,6 +30,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-location",
       [
         "expo-splash-screen",
         {
