@@ -1,10 +1,12 @@
+import { getDriverProfile } from "@/services/driverService";
+import { useAuthStore } from "@/stores/authStore";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
-  StatusBar,
   Switch,
   Text,
   TouchableOpacity,
@@ -13,11 +15,43 @@ import {
 
 export default function DriverDashboardScreen() {
   const router = useRouter();
+  const { user, refreshUser } = useAuthStore();
   const [isReady, setIsReady] = useState(true);
+  const [mitraName, setMitraName] = useState<string | null>(
+    user?.mitra?.name ?? null
+  );
+
+  useEffect(() => {
+    if (user?.mitra?.name) {
+      setMitraName(user.mitra.name);
+      return;
+    }
+    getDriverProfile()
+      .then((profile) => {
+        if (profile.mitra?.name) {
+          setMitraName(profile.mitra.name);
+        } else {
+          return refreshUser().then(() => {
+            const updated = useAuthStore.getState().user;
+            if (updated?.mitra?.name) {
+              setMitraName(updated.mitra.name);
+            }
+          });
+        }
+      })
+      .catch(() => {
+        refreshUser().then(() => {
+          const updated = useAuthStore.getState().user;
+          if (updated?.mitra?.name) {
+            setMitraName(updated.mitra.name);
+          }
+        }).catch(() => {});
+      });
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-[#0D3B66]">
-      <StatusBar barStyle="light-content" backgroundColor="#0D3B66" />
+      <StatusBar style="light" />
 
       <View className="flex-1 bg-[#F8FAFC]">
         <ScrollView
@@ -47,10 +81,10 @@ export default function DriverDashboardScreen() {
             </View>
 
             <Text className="text-2xl font-bold text-white mb-1">
-              Selamat pagi, Pak Andi
+              Selamat datang, {user?.name?.split(" ")[0] ?? "Driver"}
             </Text>
             <Text className="text-sm text-gray-300">
-              Siap untuk perjalanan hari ini?
+              {mitraName ?? "Siap untuk perjalanan hari ini?"}
             </Text>
           </View>
 
@@ -90,7 +124,7 @@ export default function DriverDashboardScreen() {
             <View className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-xs text-gray-500">
-                  PT Bintang Lestari Putra
+                  {mitraName ?? "-"}
                 </Text>
                 <View className="bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100">
                   <Text className="text-[10px] font-bold text-amber-600">

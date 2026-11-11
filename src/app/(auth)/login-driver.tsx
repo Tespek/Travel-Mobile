@@ -1,27 +1,47 @@
+import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 export default function LoginDriverScreen() {
   const router = useRouter();
   const { width } = Dimensions.get("window");
+  const { login, isLoading } = useAuthStore();
 
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    router.replace("/(driver)/");
+  const handleLogin = async () => {
+    if (!emailOrPhone.trim() || !password.trim()) {
+      Alert.alert("Peringatan", "Email dan kata sandi tidak boleh kosong.");
+      return;
+    }
+    try {
+      await login(emailOrPhone.trim(), password);
+      // Cek role user setelah login
+      const user = useAuthStore.getState().user;
+      if (user?.role === "driver") {
+        router.replace("/(driver)/");
+      } else {
+        Alert.alert("Akses Ditolak", "Akun ini bukan akun driver.");
+        await useAuthStore.getState().logout();
+      }
+    } catch (error: any) {
+      const message = error?.response?.data?.message ?? "Login gagal. Periksa email dan kata sandi.";
+      Alert.alert("Login Gagal", message);
+    }
   };
 
   return (
@@ -106,9 +126,12 @@ export default function LoginDriverScreen() {
               {/* Tombol Masuk */}
               <TouchableOpacity
                 onPress={handleLogin}
+                disabled={isLoading}
                 className="w-full bg-[#0CA789] py-4 rounded-xl items-center"
               >
-                <Text className="text-white text-base font-bold">Masuk</Text>
+                <Text className="text-white text-base font-bold">
+                  {isLoading ? "Memproses..." : "Masuk"}
+                </Text>
               </TouchableOpacity>
 
               {/* NAVIGASI BARU: Pindah ke Register Driver */}

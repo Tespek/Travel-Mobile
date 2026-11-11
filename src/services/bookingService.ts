@@ -39,7 +39,8 @@ export interface CreateBookingPayload {
 
 export const createBooking = async (payload: CreateBookingPayload): Promise<Booking> => {
   const response = await api.post("/bookings", payload);
-  return response.data.data;
+  // Handle both { data: {...} } and langsung objek booking
+  return response.data.data ?? response.data;
 };
 
 export const getBookings = async (): Promise<Booking[]> => {

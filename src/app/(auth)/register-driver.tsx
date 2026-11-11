@@ -1,6 +1,8 @@
+import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+    Alert,
     Dimensions,
     KeyboardAvoidingView,
     Platform,
@@ -16,16 +18,37 @@ import Svg, { Path } from "react-native-svg";
 export default function RegisterDriverScreen() {
   const router = useRouter();
   const { width } = Dimensions.get("window");
+  const { register, isLoading } = useAuthStore();
 
   const [nama, setNama] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [sim, setSim] = useState("");
-  const [kodeMitra, setKodeMitra] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = () => {
-    // Mengarahkan ke halaman menunggu verifikasi setelah klik daftar
-    router.replace("/(auth)/pending-verification");
+  const handleRegister = async () => {
+    if (!nama.trim() || !email.trim() || !phone.trim() || !password) {
+      Alert.alert("Peringatan", "Semua kolom wajib diisi.");
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert("Peringatan", "Kata sandi minimal 6 karakter.");
+      return;
+    }
+    try {
+      await register(nama.trim(), email.trim(), phone.trim(), password, password, "driver");
+      router.replace("/(auth)/pending-verification");
+    } catch (error: any) {
+      const apiErrors = error?.response?.data?.errors;
+      const apiMessage = error?.response?.data?.message;
+      let message = "Pendaftaran gagal. Coba lagi.";
+      if (apiErrors) {
+        const firstError = Object.values(apiErrors as Record<string, string[]>)[0];
+        message = Array.isArray(firstError) ? firstError[0] : String(firstError);
+      } else if (apiMessage) {
+        message = apiMessage;
+      }
+      Alert.alert("Pendaftaran Gagal", message);
+    }
   };
 
   return (
@@ -79,6 +102,22 @@ export default function RegisterDriverScreen() {
                 />
               </View>
 
+              {/* Input Email */}
+              <View className="mb-4">
+                <Text className="text-xs font-bold text-[#334155] mb-2">
+                  Email
+                </Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="nama@email.com"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#1e293b] bg-gray-50/50"
+                />
+              </View>
+
               {/* Input Nomor HP */}
               <View className="mb-4">
                 <Text className="text-xs font-bold text-[#334155] mb-2">
@@ -94,45 +133,15 @@ export default function RegisterDriverScreen() {
                 />
               </View>
 
-              {/* Input Nomor SIM / KTP */}
-              <View className="mb-4">
-                <Text className="text-xs font-bold text-[#334155] mb-2">
-                  Nomor SIM A / B1
-                </Text>
-                <TextInput
-                  value={sim}
-                  onChangeText={setSim}
-                  placeholder="Masukkan nomor SIM"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="number-pad"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#1e293b] bg-gray-50/50"
-                />
-              </View>
-
-              {/* Input Kode Kemitraan */}
-              <View className="mb-4">
-                <Text className="text-xs font-bold text-[#0CA789] mb-2">
-                  Kode Kemitraan (Dari Admin)
-                </Text>
-                <TextInput
-                  value={kodeMitra}
-                  onChangeText={setKodeMitra}
-                  placeholder="Masukkan kode unik pendaftaran"
-                  placeholderTextColor="#94A3B8"
-                  autoCapitalize="characters"
-                  className="w-full border border-[#0CA789]/30 rounded-xl px-4 py-3 text-sm text-[#1e293b] bg-[#0CA789]/5"
-                />
-              </View>
-
               {/* Input Kata Sandi */}
               <View className="mb-8">
                 <Text className="text-xs font-bold text-[#334155] mb-2">
-                  Kata Sandi Baru
+                  Kata Sandi
                 </Text>
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="Buat kata sandi yang kuat"
+                  placeholder="Minimal 6 karakter"
                   placeholderTextColor="#94A3B8"
                   secureTextEntry
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#1e293b] bg-gray-50/50"
@@ -142,10 +151,11 @@ export default function RegisterDriverScreen() {
               {/* Tombol Daftar */}
               <TouchableOpacity
                 onPress={handleRegister}
+                disabled={isLoading}
                 className="w-full bg-[#0CA789] py-4 rounded-xl items-center"
               >
                 <Text className="text-white text-base font-bold">
-                  Ajukan Pendaftaran
+                  {isLoading ? "Memproses..." : "Ajukan Pendaftaran"}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,9 +1,13 @@
+import { getDriverProfile } from "@/services/driverService";
+import { useAuthStore } from "@/stores/authStore";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
-  StatusBar,
   Text,
   TouchableOpacity,
   View,
@@ -11,15 +15,71 @@ import {
 
 export default function ProfilScreen() {
   const router = useRouter();
+  const { user, logout, refreshUser } = useAuthStore();
+  const [mitraName, setMitraName] = useState<string | null>(
+    user?.mitra?.name ?? null
+  );
+
+  // Urutan prioritas:
+  // 1. Sudah ada di store (dari login/loadToken) → langsung pakai
+  // 2. Fetch /api/driver/profile → ambil dari sana
+  // 3. Refresh /api/user → backend mungkin sudah include mitra, perbarui store
+  useEffect(() => {
+    if (user?.mitra?.name) {
+      setMitraName(user.mitra.name);
+      return;
+    }
+    getDriverProfile()
+      .then((profile) => {
+        if (profile.mitra?.name) {
+          setMitraName(profile.mitra.name);
+        } else {
+          // Endpoint driver/profile belum ada atau belum return mitra,
+          // coba refresh dari /api/user (backend mungkin sudah include relasi)
+          return refreshUser().then(() => {
+            const updated = useAuthStore.getState().user;
+            if (updated?.mitra?.name) {
+              setMitraName(updated.mitra.name);
+            }
+          });
+        }
+      })
+      .catch(() => {
+        // Semua gagal — coba refresh user saja
+        refreshUser().then(() => {
+          const updated = useAuthStore.getState().user;
+          if (updated?.mitra?.name) {
+            setMitraName(updated.mitra.name);
+          }
+        }).catch(() => {});
+      });
+  }, []);
+
+  const initials = user?.name
+    ? user.name.split(" ").slice(0, 2).map((n) => n[0].toUpperCase()).join("")
+    : "?";
 
   const handleLogout = () => {
-    // Arahkan ke halaman login (sesuaikan dengan nama file login kamu)
-    router.replace("/(auth)/login-driver");
+    Alert.alert(
+      "Keluar",
+      "Apakah kamu yakin ingin keluar?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Keluar",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace("/(auth)/login-driver");
+          },
+        },
+      ]
+    );
   };
 
   return (
     <SafeAreaView className="flex-1 bg-[#0D3B66]">
-      <StatusBar barStyle="light-content" backgroundColor="#0D3B66" />
+      <StatusBar style="light" />
 
       <View className="flex-1 bg-[#F8FAFC]">
         <ScrollView
@@ -60,40 +120,36 @@ export default function ProfilScreen() {
             {/* KARTU IDENTITAS */}
             <View className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-4 flex-row items-center">
               <View className="w-16 h-16 bg-[#0CA789]/10 rounded-2xl justify-center items-center mr-4">
-                <Text className="text-xl font-bold text-[#0CA789]">AS</Text>
+                <Text className="text-xl font-bold text-[#0CA789]">{initials}</Text>
               </View>
               <View className="flex-1">
                 <Text className="text-base font-bold text-[#1e293b]">
-                  Andi Saputra
+                  {user?.name ?? "-"}
                 </Text>
                 <Text className="text-xs text-gray-500 mt-0.5 mb-2">
-                  Driver · PT Bintang Lestari Putra
+                  Driver{mitraName ? ` · ${mitraName}` : ""}
                 </Text>
                 <View className="bg-[#0CA789]/10 px-3 py-1.5 rounded-full self-start">
                   <Text className="text-[10px] font-bold text-[#0CA789]">
-                    Terverifikasi (simulasi)
+                    Terverifikasi
                   </Text>
                 </View>
               </View>
             </View>
 
-            {/* KARTU DETAIL KENDARAAN & KONTAK */}
+            {/* KARTU DETAIL */}
             <View className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
               <View className="flex-row justify-between mb-4">
-                <Text className="text-xs text-gray-500">Nomor telepon</Text>
+                <Text className="text-xs text-gray-500">Email</Text>
                 <Text className="text-xs font-bold text-[#1e293b]">
-                  08xx-xxxx-1234
-                </Text>
-              </View>
-              <View className="flex-row justify-between mb-4">
-                <Text className="text-xs text-gray-500">Kendaraan</Text>
-                <Text className="text-xs font-bold text-[#1e293b]">
-                  Toyota Hiace
+                  {user?.email ?? "-"}
                 </Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-xs text-gray-500">Nomor kendaraan</Text>
-                <Text className="text-xs font-bold text-[#1e293b]">BLP 01</Text>
+                <Text className="text-xs text-gray-500">Nomor telepon</Text>
+                <Text className="text-xs font-bold text-[#1e293b]">
+                  {user?.phone ?? "-"}
+                </Text>
               </View>
             </View>
 
